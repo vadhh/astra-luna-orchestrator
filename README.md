@@ -38,9 +38,9 @@ much leverage:
 | Output | $50.00 | $0.60–$1.20 | 42–83× |
 
 Astra does not have a public API SKU; its values above are API-equivalent
-estimates, not ChatGPT or Codex subscription charges. Luna values use published
-off-peak and peak API rates. See the [benchmark methodology](docs/BENCHMARK.md)
-for sources, exact measurements and limitations.
+estimates, not ChatGPT or Codex subscription charges. The original DeepSeek
+measurements are not Luna measurements; see the [baseline comparison](docs/BENCHMARK-COMPARISON.md)
+before using them for cost estimates.
 
 ## How it works
 
