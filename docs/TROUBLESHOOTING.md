@@ -2,11 +2,11 @@
 
 ## The skill is missing
 
-Check that installation ended with `Installed` or `Already installed`, not only a successful dry run. The expected file is `~/.agents/skills/astra-flash-orchestrator/SKILL.md`. Fully quit/reopen the host app, then start an Astra session. Check custom home locations and client skill discovery before reinstalling.
+Check that installation ended with `Installed` or `Already installed`, not only a successful dry run. The expected file is `~/.agents/skills/astra-luna-orchestrator/SKILL.md`. Fully quit/reopen the host app, then start an Astra session. Check custom home locations and client skill discovery before reinstalling.
 
 ## Expected worker route is missing or different
 
-The direct default is `deepseek/deepseek-v4.1-flash`. A new alternate-provider
+The direct default is `deepseek/deepseek-v4.1-luna`. A new alternate-provider
 install requires the exact documented `--worker-route`. An installed doctor or
 later update reuses the valid generated routing binding automatically; a doctor
 run from a fresh source checkout needs the option again. Establish the
@@ -46,7 +46,7 @@ This protects later edits, including changes to the shared personal AGENTS file.
 
 Provider usage and real task outcomes determine cost and quality. Offline tests validate installation and planning helpers, not the performance of either model. Request metadata is routing evidence; a worker's self-description is not.
 
-## Flash is visible in the picker but unavailable for delegation
+## Luna is visible in the picker but unavailable for delegation
 
 The merged catalog must advertise the exact selected route with
 `multi_agent_version: "v2"`. A model entry or default-subagent setting alone is

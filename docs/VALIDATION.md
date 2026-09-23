@@ -10,7 +10,7 @@ with Python 3.14.3.
   profile/collision/symlink checks, URL validation, fake-secret redaction,
   generated role TOML, rollback, guarded undo, plan validation and release-file
   filtering.
-- Every documented V4.1 Flash route is accepted only when explicitly selected or
+- Every documented V4.1 Luna route is accepted only when explicitly selected or
   preserved from an existing valid package binding and advertised as
   `multi_agent_version: "v2"`. Tests cover OpenRouter role generation, remembered
   update behavior, unreviewed-route rejection, uncertified-route rejection and
@@ -23,7 +23,7 @@ All tests use synthetic configuration, temporary directories and a local HTTP fi
 
 ## Prior local installation evidence
 
-The preceding package revision was installed in a macOS Codex setup using an Astra root and the exact Flash worker route. Static configuration checks passed; root configuration and authentication bytes were preserved. Its optional unauthenticated local catalog GET was rejected. The public revision's installer is verified with synthetic homes; this report does not claim it was reapplied to that real installation.
+The preceding package revision was installed in a macOS Codex setup using an Astra root and the exact Luna worker route. Static configuration checks passed; root configuration and authentication bytes were preserved. Its optional unauthenticated local catalog GET was rejected. The public revision's installer is verified with synthetic homes; this report does not claim it was reapplied to that real installation.
 
 ## Still unverified
 

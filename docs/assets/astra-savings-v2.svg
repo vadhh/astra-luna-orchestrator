@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Astra Flash Orchestrator measured efficiency</title>
-  <desc id="desc">Keep Astra focused on decisions and use DeepSeek V4.1 Flash for implementation. A field benchmark measured 98.9 percent less Astra input per one thousand implementation and test lines.</desc>
+  <title id="title">Astra Luna Orchestrator measured efficiency</title>
+  <desc id="desc">Keep Astra focused on decisions and use GPT-5.6 Luna for implementation. A field benchmark measured 98.9 percent less Astra input per one thousand implementation and test lines.</desc>
 
   <rect width="1200" height="630" fill="#ffffff"/>
   <rect x="24" y="24" width="1152" height="582" rx="24" fill="#f7f7f5" stroke="#e4e4df"/>
@@ -11,7 +11,7 @@
 
   <text x="72" y="158" fill="#14825f" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4">ASTRA DECIDES. DEEPSEEK V4.1 FLASH BUILDS.</text>
   <text x="72" y="211" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Keep Astra on the decisions.</text>
-  <text x="72" y="261" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Give Flash the workload.</text>
+  <text x="72" y="261" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Give Luna the workload.</text>
 
   <text x="860" y="211" fill="#14825f" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="700" text-anchor="middle">98.9%</text>
   <text x="860" y="244" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700" text-anchor="middle">less Astra input</text>
@@ -32,10 +32,10 @@
   <rect x="1015" y="351" width="87" height="27" rx="13.5" fill="#14825f"/>
   <text x="1058.5" y="369" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" text-anchor="middle">CURRENT</text>
   <text x="634" y="424" fill="#14825f" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">95.9K</text>
-  <text x="634" y="450" fill="#4f7165" font-family="Arial, Helvetica, sans-serif" font-size="14">Astra decides and reviews. Flash builds.</text>
+  <text x="634" y="450" fill="#4f7165" font-family="Arial, Helvetica, sans-serif" font-size="14">Astra decides and reviews. Luna builds.</text>
   <line x1="634" y1="474" x2="1102" y2="474" stroke="#c9e3da"/>
   <text x="634" y="505" fill="#14825f" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">$0.26-$0.34 / 1K lines</text>
-  <text x="1102" y="505" fill="#4f7165" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="end">Astra + Flash input</text>
+  <text x="1102" y="505" fill="#4f7165" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="end">Astra + Luna input</text>
 
   <text x="72" y="570" fill="#777773" font-family="Arial, Helvetica, sans-serif" font-size="13">One measured field build. API-equivalent estimates, not guaranteed subscription savings.</text>
   <text x="1128" y="570" fill="#777773" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="end">See docs/BENCHMARK.md</text>

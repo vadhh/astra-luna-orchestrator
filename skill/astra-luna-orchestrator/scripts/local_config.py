@@ -14,17 +14,10 @@ if sys.version_info < (3, 11):
     raise SystemExit("Python 3.11+ is required. No packages or settings were changed.")
 import tomllib
 
-ROUTE = "deepseek/deepseek-v4.1-flash"
-SUPPORTED_ROUTES = {
-    ROUTE: "DeepSeek API",
-    "openrouter/deepseek-v4.1-flash": "OpenRouter",
-    "opencode-go/deepseek-v4.1-flash": "opencode Go",
-    "commandcode/deepseek-v4.1-flash": "Command Code",
-    "nousresearch/deepseek-v4.1-flash": "Nous Research",
-    "ollama-cloud/deepseek-v4.1-flash": "Ollama Cloud",
-}
-ROLE = "astra_flash_builder"
-SKILL = "astra-flash-orchestrator"
+ROUTE = "gpt-5.6-luna"
+SUPPORTED_ROUTES = {ROUTE: "OpenAI"}
+ROLE = "astra_luna_builder"
+SKILL = "astra-luna-orchestrator"
 
 # Keys Codex reads as scalar settings directly under [agents]. Every other key
 # there is read as an agent NAME whose value must be a role table, so a scalar
@@ -113,7 +106,7 @@ def resolve_worker_route(requested: str | None = None, binding: Path | None = No
             raise SetupError("The existing routing binding does not name a worker model.")
     if route not in SUPPORTED_ROUTES:
         raise SetupError(
-            "Unsupported worker route. Choose a reviewed DeepSeek V4.1 Flash route: "
+            "Unsupported worker route. Choose the supported GPT-5.6 Luna route: "
             + ", ".join(SUPPORTED_ROUTES)
         )
     return route
@@ -175,12 +168,14 @@ def inspect(
             "The global default_subagent_model is not used or changed; the installed named role pins its own worker model."
         )
     if config.get("model") in SUPPORTED_ROUTES:
-        raise SetupError("The root model is Flash. Select Astra as root before installing this workflow.")
+        raise SetupError("The root model is Luna. Select Astra as root before installing this workflow.")
 
     catalog_value = config.get("model_catalog_json")
-    if not isinstance(catalog_value, str) or not catalog_value:
-        raise SetupError("No model_catalog_json was found. Confirm the existing Codex Router configuration.")
-    catalog_path = resolve_path(catalog_value, home, codex_home)
+    if isinstance(catalog_value, str) and catalog_value:
+        catalog_path = resolve_path(catalog_value, home, codex_home)
+    else:
+        catalog_path = codex_home / "models_cache.json"
+        warnings.append("Using Codex's native models_cache.json; no Router configuration was inspected.")
     try:
         if catalog_path.stat().st_size > 20_000_000:
             raise SetupError("The model catalog is unexpectedly large; inspect it manually.")
@@ -190,20 +185,16 @@ def inspect(
     matches = [entry for entry in model_entries(payload) if model_id(entry) == worker_route]
     if len(matches) != 1:
         raise SetupError(
-            f"The selected Flash V4.1 route ({worker_route}) is missing or duplicated in the local catalog. "
-            "Configure that exact route with the Router's own local setup, then rerun this installer. "
-            "No provider was substituted."
+            f"The selected Luna route ({worker_route}) is missing or duplicated in the local catalog. "
+            "Refresh Codex's model catalog, then rerun this installer."
         )
     entry = matches[0]
-    if entry.get("multi_agent_version") != "v2":
+    if entry.get("multi_agent_version") not in {"v1", "v2"}:
         raise SetupError(
-            f"The selected Flash route ({worker_route}) exists in the catalog but is not "
+            f"The selected Luna route ({worker_route}) exists in the catalog but is not "
             "advertised for native subagents "
-            "(multi_agent_version must be v2). Select this exact route using your "
-            "Router's documented subagent settings, republish the catalog, and fully "
-            "quit/reopen the host app. Selection is not runtime verification. "
-            "Do not run subagents certify, test-model --live, a smoke test, or another "
-            "paid probe as part of this package's installation."
+            "(multi_agent_version must be v1 or v2). Fully quit/reopen the host app after "
+            "the catalog is refreshed. Selection is not runtime verification."
         )
     levels = entry.get("supported_reasoning_levels", [])
     supported = [x.get("effort") if isinstance(x, dict) else x for x in levels] if isinstance(levels, list) else []
@@ -218,10 +209,15 @@ def inspect(
         warnings.append("No worker effort was pinned; use explicit model selection without an effort at spawn, then inspect the actual thread.")
 
     provider = config.get("model_provider", "openai")
-    if provider == "openai":
+    if provider == "openai" and not config.get("openai_base_url"):
+        url = ""
+        valid = True
+    elif provider == "openai":
         url = config.get("openai_base_url", "")
+        valid = False
     else:
         url = config.get("model_providers", {}).get(provider, {}).get("base_url", "")
+        valid = False
     try:
         parsed = urlsplit(url)
         loopback = parsed.hostname in {"127.0.0.1", "localhost", "::1"}
@@ -229,14 +225,14 @@ def inspect(
         # Keep exact path shapes; never accept arbitrary loopback API paths.
         route_path = parsed.path.rstrip("/")
         recognized_path = route_path == "/v1" or bool(re.fullmatch(r"/_codex-router/[A-Za-z0-9_-]+/v1", route_path))
-        valid = parsed.scheme in {"http", "https"} and loopback and recognized_path
+        valid = valid or (parsed.scheme in {"http", "https"} and loopback and recognized_path)
         valid = valid and not parsed.query and not parsed.fragment
         valid = valid and not parsed.username and not parsed.password
         _ = parsed.port
     except (TypeError, ValueError):
         valid = False
     if not valid:
-        raise SetupError("The inspected provider does not point at a recognized loopback Codex Router URL. URL withheld.")
+        raise SetupError("The inspected provider is not OpenAI or a recognized loopback Codex Router URL. URL withheld.")
     if not config.get("model"):
         warnings.append("No root model is set in this config; select GPT-6 Astra in the new session UI.")
     if config.get("features", {}).get("multi_agent") is False:
@@ -255,7 +251,7 @@ def inspect(
         "profile_inspected": selected,
         "catalog_contains_worker": True,
         "catalog_advertises_subagent": True,
-        "loopback_router_configured": True,
+        "loopback_router_configured": bool(url),
         "input_hashes": input_hashes,
         "warnings": warnings,
     }

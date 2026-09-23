@@ -1,7 +1,7 @@
 # <Task ID>: <Reviewable deliverable>
 
 ## Assignment
-Executor: astra_flash_builder
+Executor: astra_luna_builder
 Phase: <phase ID>
 Workspace: <exact path verified by Astra>
 Baseline: <branch/commit plus pre-existing changes, or explicit non-Git snapshot>

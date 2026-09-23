@@ -11,6 +11,6 @@ routing.json
 receipt.json
 config.toml
 auth.json
-astra-flash-install-backups/
+astra-luna-install-backups/
 dist/
 .venv/

@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / 'skill' / 'astra-flash-orchestrator' / 'scripts'
+SCRIPTS = ROOT / 'skill' / 'astra-luna-orchestrator' / 'scripts'
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT))
 import install
@@ -101,41 +101,36 @@ class SetupFixture(unittest.TestCase):
                 self.assertEqual(report['worker_model'], route)
                 self.assertEqual(report['worker_provider'], provider)
 
-    def test_openrouter_route_is_pinned_in_role_and_routing_binding(self):
-        route = 'openrouter/deepseek-v4.1-flash'
-        self.set_catalog_route(route)
-        result = self.cli('--worker-route', route, '--apply')
+    def test_luna_route_is_pinned_in_role_and_routing_binding(self):
+        result = self.cli('--apply')
         self.assertEqual(result.returncode, 0, result.stderr)
         role = tomllib.loads((self.codex / 'agents' / f'{ROLE}.toml').read_text())
-        self.assertEqual(role['model'], route)
+        self.assertEqual(role['model'], ROUTE)
         routing = json.loads(
             (self.home / '.agents' / 'skills' / SKILL / 'routing.json').read_text()
         )
-        self.assertEqual(routing['worker_model'], route)
-        self.assertEqual(routing['worker_provider'], 'OpenRouter')
+        self.assertEqual(routing['worker_model'], ROUTE)
+        self.assertEqual(routing['worker_provider'], 'OpenAI')
 
-    def test_existing_alternate_binding_is_reused_on_update(self):
-        route = 'openrouter/deepseek-v4.1-flash'
-        self.set_catalog_route(route)
-        first = self.cli('--worker-route', route, '--apply')
+    def test_existing_binding_is_reused_on_update(self):
+        first = self.cli('--apply')
         self.assertEqual(first.returncode, 0, first.stderr)
         second = self.cli('--apply')
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertIn('no changes needed', second.stdout)
         role = tomllib.loads((self.codex / 'agents' / f'{ROLE}.toml').read_text())
-        self.assertEqual(role['model'], route)
+        self.assertEqual(role['model'], ROUTE)
 
     def test_default_route_does_not_fall_back_to_available_alternate(self):
-        self.set_catalog_route('openrouter/deepseek-v4.1-flash')
+        self.set_catalog_route('unavailable-model')
         result = self.cli()
         self.assertEqual(result.returncode, 2)
         self.assertIn(ROUTE, result.stderr)
-        self.assertIn('No provider was substituted', result.stderr)
         self.assertFalse((self.home / '.agents').exists())
 
     def test_unreviewed_worker_route_is_rejected(self):
         with self.assertRaisesRegex(SetupError, 'Unsupported worker route'):
-            inspect(self.home, self.codex, worker_route='custom/deepseek-v4.1-flash')
+            inspect(self.home, self.codex, worker_route='custom/deepseek-v4.1-luna')
 
     def test_planned_writes_never_include_config(self):
         self.assertNotIn(self.config, {change['path'] for change in self.changes()})
@@ -194,7 +189,7 @@ class SetupFixture(unittest.TestCase):
 
     def test_non_spawnable_catalog_route_blocks_install(self):
         payload = json.loads(self.catalog.read_text())
-        for value in ['v1', None]:
+        for value in [None, 'disabled']:
             with self.subTest(version=value):
                 payload['models'][0]['multi_agent_version'] = value
                 self.catalog.write_text(json.dumps(payload))
@@ -204,21 +199,10 @@ class SetupFixture(unittest.TestCase):
                 self.assertFalse((self.home / '.agents').exists())
                 self.assertEqual(self.config.read_bytes(), self.original_config)
 
-    def test_non_spawnable_alternate_route_blocks_install_without_paid_probe_advice(self):
-        route = 'openrouter/deepseek-v4.1-flash'
-        self.set_catalog_route(route, 'v1')
-        result = self.cli('--worker-route', route, '--apply')
-        self.assertEqual(result.returncode, 2)
-        self.assertIn(route, result.stderr)
-        self.assertIn('Do not run subagents certify', result.stderr)
-        self.assertFalse((self.home / '.agents').exists())
-
-    def test_flash_root_is_rejected_for_every_supported_provider(self):
-        route = 'openrouter/deepseek-v4.1-flash'
-        self.set_catalog_route(route)
-        self.config.write_text(self.config.read_text().replace('fixture-astra-root', route))
-        with self.assertRaisesRegex(SetupError, 'root model is Flash'):
-            inspect(self.home, self.codex, worker_route=route)
+    def test_luna_root_is_rejected(self):
+        self.config.write_text(self.config.read_text().replace('fixture-astra-root', ROUTE))
+        with self.assertRaisesRegex(SetupError, 'root model is Luna'):
+            inspect(self.home, self.codex)
 
     def test_non_loopback_route_fails_without_exposing_url(self):
         self.config.write_text(self.config.read_text().replace('127.0.0.1', 'private.remote.test'))
@@ -247,7 +231,7 @@ class SetupFixture(unittest.TestCase):
                     self.report()
 
     def test_existing_backup_directory_permissions_preserved(self):
-        backup = self.codex / 'astra-flash-install-backups'
+        backup = self.codex / 'astra-luna-install-backups'
         backup.mkdir(mode=0o750)
         before = backup.stat().st_mode
         self.apply()
@@ -324,9 +308,9 @@ class SetupFixture(unittest.TestCase):
         # An agent name must own a role table; a bare scalar is the exact shape
         # Codex rejects with "expected struct AgentRoleToml".
         self.config.write_text(
-            self.config.read_text() + '[agents]\nastra_flash_builder = "not-a-table"\n'
+            self.config.read_text() + '[agents]\nastra_luna_builder = "not-a-table"\n'
         )
-        with self.assertRaisesRegex(SetupError, r'do not belong under \[agents\].*astra_flash_builder'):
+        with self.assertRaisesRegex(SetupError, r'do not belong under \[agents\].*astra_luna_builder'):
             self.report()
 
     def test_standalone_profile_is_read_without_modifying_it(self):
@@ -423,7 +407,7 @@ class SetupFixture(unittest.TestCase):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
                 seen.append(self.path)
-                body = json.dumps({'data': [{'id': 'openrouter/deepseek-v4.1-flash'}]}).encode()
+                body = json.dumps({'data': [{'id': ROUTE}]}).encode()
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
@@ -434,17 +418,15 @@ class SetupFixture(unittest.TestCase):
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
-            route = 'openrouter/deepseek-v4.1-flash'
-            self.set_catalog_route(route)
             self.config.write_text(self.config.read_text().replace(':4202/', f':{server.server_port}/'))
             result = subprocess.run([sys.executable, str(SCRIPTS / 'doctor.py'), '--home', str(self.home),
-                                     '--codex-home', str(self.codex), '--worker-route', route,
+                                     '--codex-home', str(self.codex), '--worker-route', ROUTE,
                                      '--check-local-router'], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(seen, ['/_codex-router/TEST_PRIVATE_CAPABILITY/v1/models'])
             self.assertNotIn('TEST_PRIVATE_CAPABILITY', result.stdout + result.stderr)
             report = json.loads(result.stdout)
-            self.assertEqual(report['worker_model'], route)
+            self.assertEqual(report['worker_model'], ROUTE)
             self.assertFalse(report['runtime_verified'])
         finally:
             server.shutdown()
@@ -464,9 +446,8 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(resolve_worker_route(), ROUTE)
         with tempfile.TemporaryDirectory() as directory:
             binding = Path(directory).resolve() / 'routing.json'
-            route = 'openrouter/deepseek-v4.1-flash'
-            binding.write_text(json.dumps({'worker_model': route}))
-            self.assertEqual(resolve_worker_route(binding=binding), route)
+            binding.write_text(json.dumps({'worker_model': ROUTE}))
+            self.assertEqual(resolve_worker_route(binding=binding), ROUTE)
             self.assertEqual(resolve_worker_route(ROUTE, binding), ROUTE)
 
     def test_worker_route_resolution_rejects_malformed_or_unreviewed_binding(self):
@@ -475,7 +456,7 @@ class PolicyTests(unittest.TestCase):
             binding.write_text('{broken')
             with self.assertRaises(SetupError):
                 resolve_worker_route(binding=binding)
-            binding.write_text(json.dumps({'worker_model': 'custom/deepseek-v4.1-flash'}))
+            binding.write_text(json.dumps({'worker_model': 'custom/luna'}))
             with self.assertRaisesRegex(SetupError, 'Unsupported worker route'):
                 resolve_worker_route(binding=binding)
 
@@ -538,7 +519,7 @@ class PlanTests(unittest.TestCase):
             with self.assertRaises(PlanError):
                 validate(self.plan, self.root)
 
-    def test_sensitive_task_cannot_be_assigned_to_flash(self):
+    def test_sensitive_task_cannot_be_assigned_to_luna(self):
         self.plan['tasks'][0]['risk'] = 'sensitive'
         with self.assertRaises(PlanError):
             validate(self.plan, self.root)
@@ -564,14 +545,14 @@ class PlanTests(unittest.TestCase):
 
     def test_parallel_independent_scopes_are_accepted(self):
         self.add_task()
-        self.plan['max_flash_workers'] = 2
+        self.plan['max_luna_workers'] = 2
         for task in self.plan['tasks']:
             task['parallel_group'] = 'G1'
         validate(self.plan, self.root)
 
     def test_parallel_overlap_is_rejected(self):
         self.add_task()['allowed_paths'] = ['src/invoices/']
-        self.plan['max_flash_workers'] = 2
+        self.plan['max_luna_workers'] = 2
         for task in self.plan['tasks']:
             task['parallel_group'] = 'G1'
         with self.assertRaises(PlanError):
@@ -579,7 +560,7 @@ class PlanTests(unittest.TestCase):
 
     def test_parallel_dependency_is_rejected(self):
         self.add_task()['depends_on'] = ['T1']
-        self.plan['max_flash_workers'] = 2
+        self.plan['max_luna_workers'] = 2
         for task in self.plan['tasks']:
             task['parallel_group'] = 'G1'
         with self.assertRaises(PlanError):
@@ -595,7 +576,7 @@ class PlanTests(unittest.TestCase):
             validate(self.plan, self.root)
 
     def test_excessive_parallelism_is_rejected(self):
-        self.plan['max_flash_workers'] = 99
+        self.plan['max_luna_workers'] = 99
         with self.assertRaises(PlanError):
             validate(self.plan, self.root)
 

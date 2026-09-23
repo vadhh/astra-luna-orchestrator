@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preview/install the Astra + Flash skill without changing Codex model/provider settings."""
+"""Preview/install the Astra + Luna skill without changing Codex model/provider settings."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -16,12 +16,12 @@ if sys.version_info < (3, 11):
     raise SystemExit("Python 3.11+ is required. No packages or settings were changed.")
 sys.dont_write_bytecode = True
 BUNDLE = Path(__file__).resolve().parent
-SKILL_SOURCE = BUNDLE / "skill" / "astra-flash-orchestrator"
+SKILL_SOURCE = BUNDLE / "skill" / "astra-luna-orchestrator"
 sys.path.insert(0, str(SKILL_SOURCE / "scripts"))
 from local_config import SetupError, default_locations, inspect, resolve_worker_route, ROLE, SKILL, SUPPORTED_ROUTES
 
-BEGIN = b"<!-- BEGIN astra-flash-orchestrator managed policy -->"
-END = b"<!-- END astra-flash-orchestrator managed policy -->"
+BEGIN = b"<!-- BEGIN astra-luna-orchestrator managed policy -->"
+END = b"<!-- END astra-luna-orchestrator managed policy -->"
 
 
 def digest(data: bytes | None) -> str | None:
@@ -62,7 +62,7 @@ def managed_policy(original: bytes, block: bytes) -> bytes:
 def atomic_write(path: Path, data: bytes, mode: int = 0o600) -> None:
     no_symlinks(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, name = tempfile.mkstemp(prefix=".astra-flash-", dir=path.parent)
+    fd, name = tempfile.mkstemp(prefix=".astra-luna-", dir=path.parent)
     try:
         with os.fdopen(fd, "wb") as stream:
             stream.write(data)
@@ -100,7 +100,7 @@ def plan_changes(home: Path, codex_home: Path, report: dict, with_policy: bool, 
     # JSON basic strings are valid TOML basic strings for these generated values.
     role = (
         f'name = {json.dumps(ROLE)}\n'
-        'description = "Implement an Astra-approved task bundle using the installed Flash route; never orchestrate or self-approve."\n'
+        'description = "Implement an Astra-approved task bundle using the installed Luna route; never orchestrate or self-approve."\n'
         f'model = {json.dumps(report["worker_model"])}\n'
     )
     if report["worker_effort"]:
@@ -135,7 +135,7 @@ def apply_changes(changes: list[dict], codex_home: Path, input_hashes: dict[str,
         if contents(change["path"]) != change["before"]:
             raise SetupError("An installation target changed during inspection. Rerun the installer.")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
-    backup_dir = codex_home / "astra-flash-install-backups" / stamp
+    backup_dir = codex_home / "astra-luna-install-backups" / stamp
     no_symlinks(backup_dir)
     backup_dir.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
     backup_dir.mkdir(mode=0o700)
@@ -169,8 +169,8 @@ def apply_changes(changes: list[dict], codex_home: Path, input_hashes: dict[str,
 
 def undo(receipt: Path, home: Path, codex_home: Path, apply: bool) -> None:
     no_symlinks(receipt)
-    if ".." in receipt.parts or not receipt.resolve().is_relative_to((codex_home / "astra-flash-install-backups").resolve()):
-        raise SetupError("The receipt must be inside this CODEX_HOME's astra-flash-install-backups folder.")
+    if ".." in receipt.parts or not receipt.resolve().is_relative_to((codex_home / "astra-luna-install-backups").resolve()):
+        raise SetupError("The receipt must be inside this CODEX_HOME's astra-luna-install-backups folder.")
     record = json.loads(receipt.read_text())
     if record.get("format") != 1 or record.get("status") != "installed":
         raise SetupError("This receipt does not describe an installed, undoable transaction.")
@@ -228,7 +228,7 @@ def main() -> int:
     parser.add_argument(
         "--worker-route",
         choices=SUPPORTED_ROUTES,
-        help="pin one reviewed DeepSeek V4.1 Flash provider route (default: existing binding, then direct DeepSeek API)",
+        help="pin GPT-5.6 Luna (the only supported worker route)",
     )
     parser.add_argument("--undo", type=Path, metavar="RECEIPT", help="preview restoration from an installation receipt; combine with --apply to restore")
     args = parser.parse_args()

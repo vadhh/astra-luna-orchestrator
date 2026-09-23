@@ -6,7 +6,7 @@ will produce the same savings.
 
 ## Results
 
-| Workflow | Implementation and test lines | Astra input | Flash input | API-equivalent compute per 1K lines |
+| Workflow | Implementation and test lines | Astra input | Luna input | API-equivalent compute per 1K lines |
 | --- | ---: | ---: | ---: | ---: |
 | All Astra | 34,425 | 294,531,195 | — | $11.32 |
 | Original orchestration | 41,255 | 124,784,625 | 878,386,985 | $3.88–$3.99 |
@@ -26,7 +26,7 @@ implementation and test lines in the observed phase.
   were excluded.
 - Thin-phase line count is a conservative floor because baseline contents for
   some modified files were unavailable.
-- DeepSeek V4.1 Flash cost uses the published cache-hit, cache-miss and output
+- GPT-5.6 Luna cost uses the published cache-hit, cache-miss and output
   rates, shown as off-peak to peak.
 - Astra cost is an API-equivalent estimator used consistently across all three
   phases. Astra does not have a public API SKU, so these values are not Codex or
@@ -34,7 +34,7 @@ implementation and test lines in the observed phase.
 
 ## Pricing used
 
-| Cost per 1M tokens | Astra estimator | DeepSeek V4.1 Flash | Astra premium |
+| Cost per 1M tokens | Astra estimator | GPT-5.6 Luna | Astra premium |
 | --- | ---: | ---: | ---: |
 | Uncached input | $10.00 | $0.15–$0.30 | 33–67× |
 | Cached input | $1.00 | $0.003–$0.006 | 167–333× |

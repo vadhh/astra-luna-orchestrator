@@ -27,7 +27,7 @@ def check_local_catalog(url: str, worker_route: str) -> None:
             raise SetupError("Local model response exceeded its size limit.")
         entries = model_entries(json.loads(body))
         if not any(model_id(entry) == worker_route for entry in entries):
-            raise SetupError("The live local catalog does not advertise the requested Flash route.")
+            raise SetupError("The live local catalog does not advertise the requested Luna route.")
     except (OSError, urllib.error.URLError, json.JSONDecodeError, UnicodeError) as exc:
         raise SetupError(f"Local catalog check failed ({type(exc).__name__}); private URL withheld.") from None
 

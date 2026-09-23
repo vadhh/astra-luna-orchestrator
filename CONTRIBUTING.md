@@ -1,12 +1,12 @@
 # Contributing
 
-Keep changes focused on the native Astra/Flash workflow, installation reliability, useful task contracts and review evidence. Preserve the user's root model, existing Router and security boundaries.
+Keep changes focused on the native Astra/Luna workflow, installation reliability, useful task contracts and review evidence. Preserve the user's root model, existing Router and security boundaries.
 
 Use Python 3.11+ with no third-party runtime dependencies. Run from the repository root:
 
 ```sh
 python3 -B -m unittest discover -s tests -v
-python3 -B skill/astra-flash-orchestrator/scripts/validate_plan.py examples/invoice-filter/plan.json
+python3 -B skill/astra-luna-orchestrator/scripts/validate_plan.py examples/invoice-filter/plan.json
 python3 -B scripts/release.py --check
 ```
 
